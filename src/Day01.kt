@@ -1,3 +1,5 @@
+//--- Day 1: Trebuchet?! ---
+
 fun main() {
     val digitWords = arrayOf("one", "two", "three", "four", "five", "six", "seven", "eight", "nine")
 
