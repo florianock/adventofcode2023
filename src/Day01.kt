@@ -1,6 +1,4 @@
-//--- Day 1: Trebuchet?! ---
-
-fun main() {
+fun main() { //--- Day 1: Trebuchet?! ---
     val digitWords = arrayOf("one", "two", "three", "four", "five", "six", "seven", "eight", "nine")
 
     fun getCalibrationValue(line: String): Int {
