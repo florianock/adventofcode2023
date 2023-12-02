@@ -2,9 +2,7 @@ fun main() { //--- Day 1: Trebuchet?! ---
     val digitWords = arrayOf("one", "two", "three", "four", "five", "six", "seven", "eight", "nine")
 
     fun getCalibrationValue(line: String): Int {
-        val first = line.first { it.isDigit() }
-        val last = line.last { it.isDigit() }
-        return "$first$last".toInt()
+        return "${line.first { it.isDigit() }}${line.last { it.isDigit() }}".toInt()
     }
 
     fun digitOf(d: String): Int = digitWords.indexOf(d) + 1
