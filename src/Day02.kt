@@ -1,25 +1,19 @@
 fun main() { // --- Day 2: Cube Conundrum ---
-    fun minimumSetOfCubes(game: List<String>): IntArray {
-        val grouped = game.chunked(2).groupBy { it[1] }
-        return arrayOf("red", "green", "blue").foldIndexed(intArrayOf(game[1].toInt(),0,0,0)) { idx, acc, color ->
-            val maxAmount = grouped[color]?.maxOfOrNull { l -> l[0].toInt() }
-            if (maxAmount != null) acc[idx+1] = maxAmount
-            acc
-        }
-    }
-
-    fun getValueForGame(cubes: IntArray): Int {
-        val availableCubes = arrayOf(12, 13, 14)
-        if (cubes[1] <= availableCubes[0] && cubes[2] <= availableCubes[1] && cubes[3] <= availableCubes[2]) {
-            return cubes[0]
+    fun getValueForGame(grabbed: IntArray): Int {
+        if (arrayOf(12, 13, 14).mapIndexed{ idx, available -> available >= grabbed[idx+1] }.all{ it }) {
+            return grabbed[0]
         }
         return 0
     }
 
     fun getMinimumSetOfCubes(line: String): IntArray {
-        val parts = """(: |; )""".toRegex().split(line)
-            .flatMap { p -> """\s""".toRegex().split(p.replace(",", "")) }
-        return minimumSetOfCubes(parts)
+        val game = line.split(Regex("""[:,;]?\s""")).chunked(2).groupBy { it[1] }
+        val id = game.keys.first().toInt()
+        return arrayOf("red", "green", "blue").foldIndexed(intArrayOf(id,0,0,0)) { idx, acc, color ->
+            val max = game[color]?.maxOfOrNull { l -> l[0].toInt() }
+            if (max != null) acc[idx+1] = max
+            acc
+        }
     }
 
     fun part1(input: List<String>): Int {
