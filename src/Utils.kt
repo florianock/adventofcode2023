@@ -69,7 +69,7 @@ fun print2d(
                 line += cell
             }
         }
-        println(line)
+        line.println()
     }
 }
 

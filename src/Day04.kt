@@ -13,7 +13,7 @@ fun main() { // --- Day 4: Scratchcards ---
     fun getScore(wins: WinsCount): Int = if (wins < 1) 0 else 2 toPowerOf (wins - 1)
 
     fun List<WinsCount>.collectAllCards(): IntArray {
-        val startCount = this.map { _ ->  1 }.toIntArray()
+        val startCount = IntArray(this.size) { 1 }
         return this.foldIndexed (startCount) { current, counter, wins ->
             var nextCard = current + 1
             var cardsToAdd = wins
