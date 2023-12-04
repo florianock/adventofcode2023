@@ -2,6 +2,7 @@ import java.math.BigInteger
 import java.security.MessageDigest
 import kotlin.io.path.Path
 import kotlin.io.path.readLines
+import kotlin.math.pow
 
 /**
  * Reads lines from the given input txt file.
@@ -71,3 +72,8 @@ fun print2d(
         println(line)
     }
 }
+
+/**
+ * Calculate the power of a number
+ */
+infix fun Number.toPowerOf(exponent: Number): Int = (this.toDouble().pow(exponent.toDouble())).toInt()

@@ -1,35 +1,33 @@
-import kotlin.math.pow
+typealias ScratchCardCollection = List<String>
+typealias WinsCount = Int
 
-fun main() {
-    fun countWinningNumbers(input: List<String>): List<Int> {
-        return input.map { line ->
+fun main() { // --- Day 4: Scratchcards ---
+    fun ScratchCardCollection.countWinningNumbersPerCard(): List<WinsCount> {
+        return this.map { line ->
             val split = line.replace(Regex("""\s+"""), " ").split(Regex("""(: | \| )"""))
             val winningNumbers = split[1].split(" ")
             winningNumbers.count { n -> n in split[2].split(" ") }
         }
     }
 
-    fun getScore(winCount: Int): Int = if (winCount < 1) 0 else 2.toDouble().pow(winCount - 1).toInt()
+    fun getScore(wins: WinsCount): Int = if (wins < 1) 0 else 2 toPowerOf (wins - 1)
 
-    fun countCards(wins: List<Int>): Int {
-        val startCount = wins.map { _ ->  1 }.toIntArray()
-        return wins.foldIndexed (startCount) { current, counter, amountWon ->
-            var nextCard = current+1
-            var cardsToAdd = amountWon
-            while (cardsToAdd > 0) {
-                counter[nextCard++] += counter[current]
-                cardsToAdd--
-            }
+    fun List<WinsCount>.collectAllCards(): IntArray {
+        val startCount = this.map { _ ->  1 }.toIntArray()
+        return this.foldIndexed (startCount) { current, counter, wins ->
+            var nextCard = current + 1
+            var cardsToAdd = wins
+            while (cardsToAdd-- > 0) counter[nextCard++] += counter[current]
             counter
-        }.sum()
+        }
     }
 
     fun part1(input: List<String>): Int {
-        return countWinningNumbers(input).sumOf { p -> getScore(p) }
+        return input.countWinningNumbersPerCard().sumOf(::getScore)
     }
 
     fun part2(input: List<String>): Int {
-        return countCards(countWinningNumbers(input))
+        return input.countWinningNumbersPerCard().collectAllCards().sum()
     }
 
     // test if implementation meets criteria from the description, like:
