@@ -2,10 +2,10 @@ import kotlin.math.ceil
 import kotlin.math.floor
 import kotlin.math.sqrt
 
-fun main() {
-    fun parse(input: List<String>): List<Pair<Int, Int>> {
+fun main() { // --- Day 6: Wait For It ---
+    fun parse(input: List<String>): List<Pair<Long, Long>> {
         val split = input.map { line ->
-            """(\d+)""".toRegex().findAll(line).map { m -> m.groupValues[1].toInt() }.toList()
+            """(\d+)""".toRegex().findAll(line).map { m -> m.groupValues[1].toLong() }.toList()
         }
         return split[0].zip(split[1])
     }
@@ -23,25 +23,25 @@ fun main() {
         return Pair(startWinning.toLong(), endWinning.toLong())
     }
 
-    fun part1(input: List<String>): Long {
+    fun part1(input: List<String>): Int {
         val races = parse(input)
         val result = races.map { (time, record) ->
-            val (start, end) = calculateWinningStreak(time.toLong(), record.toLong())
-            end - start + 1L
+            val (start, end) = calculateWinningStreak(time, record)
+            (end - start + 1L).toInt()
         }
-        return result.fold (1L) {acc, n -> acc * n}
+        return result.fold(1) { acc, n -> acc * n }
     }
 
-    fun part2(input: List<String>): Long {
+    fun part2(input: List<String>): Int {
         val race = parse(input).unzip().toList().map { numbers -> numbers.joinToString("").toLong() }
         val (start, end) = calculateWinningStreak(race[0], race[1])
-        return end - start + 1L
+        return (end - start + 1L).toInt()
     }
 
     // test if implementation meets criteria from the description, like:
     val testInput = readInput("Day06_test")
-    check(part1(testInput) == 288L)
-    check(part2(testInput) == 71503L)
+    check(part1(testInput) == 288)
+    check(part2(testInput) == 71503)
 
     val input = readInput("Day06")
     part1(input).println()
