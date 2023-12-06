@@ -1,4 +1,9 @@
-fun main() {
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
+import java.util.stream.LongStream
+
+suspend fun main() { // --- Day 5: If You Give A Seed A Fertilizer ---
     data class Mapping(val src: Long, val dest: Long, val rng: Long) {
         val delta = dest - src
     }
@@ -26,10 +31,29 @@ fun main() {
         }.min()
     }
 
+    suspend fun part2(input: String): Long {
+        val (seeds, mappingsList) = parseInput(input)
+        val ranges = seeds.chunked(2).map { (start, length) -> LongStream.range(start, start + length) }
+        val res = coroutineScope {
+            ranges.map { r ->
+                async {
+                    mappingsList.fold(r) { acc, mappings ->
+                        acc.map { n ->
+                            mappings.find { m -> m.src <= n && (n - m.src) < m.rng }?.let { map -> n + map.delta } ?: n
+                        }
+                    }.min()
+                }
+            }
+        }.awaitAll()
+        return res.minOfOrNull { x -> x.asLong } ?: 0
+    }
+
     // test if implementation meets criteria from the description, like:
     val testInput = readInputText("Day05_test")
     check(part1(testInput) == 35L)
+    check(part2(testInput) == 46L)
 
     val input = readInputText("Day05")
     part1(input).println()
+    part2(input).println()
 }
