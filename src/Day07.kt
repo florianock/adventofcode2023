@@ -2,24 +2,21 @@ typealias Hand = String
 typealias Bid = Int
 
 fun main() { // --- Day 7: Camel Cards ---
-
     data class Game(val hand: Hand, val bid: Bid, val withJokers: Boolean) {
         var type = this.getType(withJokers)
 
-        fun getRank(type: List<Int> = this.type): Int = type.size - type.first() + 5
+        fun rankType(type: List<Int> = this.type): Int = 5 - type.size + type.first()
 
-        private fun getType(withJokers: Boolean): List<Int> {
-            return if (withJokers) {
-                substituteJokers()
-            } else {
-                typeFromHand(this.hand)
-            }
-        }
+        fun getHandComparator(): String =
+            this.hand.map { c -> this.getCardValue(c) }.joinToString { i -> i.toString(14) }
+
+        fun getType(withJokers: Boolean): List<Int> =
+            if (withJokers) substituteJokers() else typeFromHand(this.hand)
 
         private fun substituteJokers(): List<Int> {
             val cards = arrayOf('A', 'K', 'Q', 'T', '9', '8', '7', '6', '5', '4', '3', '2')
             return if (this.hand.contains('J')) {
-                cards.map { c -> typeFromHand(this.hand.replace('J', c)) }.minBy(::getRank)
+                cards.map { c -> typeFromHand(this.hand.replace('J', c)) }.maxBy(::rankType)
             } else {
                 typeFromHand(this.hand)
             }
@@ -27,8 +24,17 @@ fun main() { // --- Day 7: Camel Cards ---
 
         private fun typeFromHand(hand: Hand): List<Int> =
             hand.groupBy { it }.map { (_, v) -> v.size }.sortedDescending()
-    }
 
+        private fun getCardValue(x: Char): Int = when {
+            x.isDigit() -> x.toString().toInt() - 1
+            x == 'T' -> 9
+            x == 'J' -> if (withJokers) 0 else 10
+            x == 'Q' -> 11
+            x == 'K' -> 12
+            x == 'A' -> 13
+            else -> throw IllegalArgumentException("Unknown card: $x")
+        }
+    }
 
     fun parse(input: List<String>, withJokers: Boolean): List<Game> {
         return input.map { l ->
@@ -38,39 +44,16 @@ fun main() { // --- Day 7: Camel Cards ---
         }
     }
 
-    fun getCardValue(x: Char, withJokers: Boolean): Int {
-        return when {
-            x.isDigit() -> x.toString().toInt()
-            x == 'T' -> 10
-            x == 'J' -> if (withJokers) 1 else 11
-            x == 'Q' -> 12
-            x == 'K' -> 13
-            x == 'A' -> 14
-            else -> throw IllegalArgumentException("Unknown card: $x")
-        }
-    }
-
-    fun compareHands(a: String, b: String, withJokers: Boolean): Int {
-        return a.zip(b).firstOrNull { (x, y) -> x != y }
-            ?.let { (x, y) -> getCardValue(x, withJokers).compareTo(getCardValue(y, withJokers)) } ?: 0
-    }
-
-    fun compareCamelCards(withJokers: Boolean) = { a: Game, b: Game ->
-        when (val result = b.getRank().compareTo(a.getRank())) {
-            0 -> compareHands(a.hand, b.hand, withJokers)
-            else -> result
-        }
-    }
-
     fun part1(input: List<String>): Int {
         val games = parse(input, false)
-        val ranked = games.sortedWith(compareCamelCards(false))
+        val ranked =
+            games.sortedWith(compareBy({ it.rankType() }, { it.getHandComparator() }))
         return ranked.mapIndexed { idx, game -> (idx + 1) * game.bid }.sum()
     }
 
     fun part2(input: List<String>): Int {
         val games = parse(input, true)
-        val ranked = games.sortedWith(compareCamelCards(true))
+        val ranked = games.sortedWith(compareBy({ it.rankType() }, { it.getHandComparator() }))
         return ranked.mapIndexed { idx, game -> (idx + 1) * game.bid }.sum()
     }
 
