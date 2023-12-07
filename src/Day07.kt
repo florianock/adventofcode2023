@@ -1,28 +1,22 @@
-typealias Hand = String
-typealias Bid = Int
-
 fun main() { // --- Day 7: Camel Cards ---
-    data class Game(val hand: Hand, val bid: Bid, val withJokers: Boolean) {
-        var type = this.getType(withJokers)
+    data class Game(val hand: String, val bid: Int, val withJokers: Boolean) : Comparable<Game> {
+        val type = if (withJokers) substituteJokers() else typeFromHand(this.hand)
 
-        fun rankType(type: List<Int> = this.type): Int = 5 - type.size + type.first()
+        private fun rankType(t: List<Int> = this.type): Int = 5 - t.size + t.first()
 
-        fun getHandComparator(): String =
-            this.hand.map { c -> this.getCardValue(c) }.joinToString { i -> i.toString(14) }
-
-        fun getType(withJokers: Boolean): List<Int> =
-            if (withJokers) substituteJokers() else typeFromHand(this.hand)
+        private fun getHandComparator(): String =
+            hand.map { c -> getCardValue(c) }.joinToString { i -> i.toString(14) }
 
         private fun substituteJokers(): List<Int> {
-            val cards = arrayOf('A', 'K', 'Q', 'T', '9', '8', '7', '6', '5', '4', '3', '2')
-            return if (this.hand.contains('J')) {
-                cards.map { c -> typeFromHand(this.hand.replace('J', c)) }.maxBy(::rankType)
+            return if (hand.contains('J')) {
+                val possibleCards = arrayOf('A', 'K', 'Q', 'T', '9', '8', '7', '6', '5', '4', '3', '2')
+                possibleCards.map { c -> typeFromHand(hand.replace('J', c)) }.maxBy(::rankType)
             } else {
-                typeFromHand(this.hand)
+                typeFromHand(hand)
             }
         }
 
-        private fun typeFromHand(hand: Hand): List<Int> =
+        private fun typeFromHand(hand: String): List<Int> =
             hand.groupBy { it }.map { (_, v) -> v.size }.sortedDescending()
 
         private fun getCardValue(x: Char): Int = when {
@@ -34,6 +28,9 @@ fun main() { // --- Day 7: Camel Cards ---
             x == 'A' -> 13
             else -> throw IllegalArgumentException("Unknown card: $x")
         }
+
+        override fun compareTo(other: Game): Int =
+            compareValuesBy(this, other, { it.rankType() }, { it.getHandComparator() })
     }
 
     fun parse(input: List<String>, withJokers: Boolean): List<Game> {
@@ -44,18 +41,15 @@ fun main() { // --- Day 7: Camel Cards ---
         }
     }
 
-    fun part1(input: List<String>): Int {
-        val games = parse(input, false)
-        val ranked =
-            games.sortedWith(compareBy({ it.rankType() }, { it.getHandComparator() }))
-        return ranked.mapIndexed { idx, game -> (idx + 1) * game.bid }.sum()
-    }
+    fun part1(input: List<String>): Int = parse(input, false)
+        .sorted()
+        .mapIndexed { idx, game -> (idx + 1) * game.bid }
+        .sum()
 
-    fun part2(input: List<String>): Int {
-        val games = parse(input, true)
-        val ranked = games.sortedWith(compareBy({ it.rankType() }, { it.getHandComparator() }))
-        return ranked.mapIndexed { idx, game -> (idx + 1) * game.bid }.sum()
-    }
+    fun part2(input: List<String>): Int = parse(input, true)
+        .sorted()
+        .mapIndexed { idx, game -> (idx + 1) * game.bid }
+        .sum()
 
     // test if implementation meets criteria from the description, like:
     val testInput = readInput("Day07_test")
