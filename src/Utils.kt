@@ -10,6 +10,9 @@ import kotlin.math.pow
  */
 fun readInput(name: String) = Path("src/$name.txt").readLines()
 
+/**
+ * Reads whole text from the given input txt file.
+ */
 fun readInputText(name: String) = Path("src/$name.txt").readText()
 
 /**
@@ -29,9 +32,9 @@ fun Any?.println() = println(this)
  */
 fun neighbors(p: Pair<Int, Int>): Set<Pair<Int, Int>> {
     return setOf(
-        Pair(p.first-1, p.second-1), Pair(p.first-1, p.second), Pair(p.first-1, p.second+1),
-        Pair(p.first, p.second-1),                              Pair(p.first, p.second+1),
-        Pair(p.first+1, p.second-1), Pair(p.first+1, p.second), Pair(p.first+1, p.second+1)
+        Pair(p.first - 1, p.second - 1), Pair(p.first - 1, p.second), Pair(p.first - 1, p.second + 1),
+        Pair(p.first, p.second - 1), Pair(p.first, p.second + 1),
+        Pair(p.first + 1, p.second - 1), Pair(p.first + 1, p.second), Pair(p.first + 1, p.second + 1)
     )
 }
 
@@ -59,11 +62,15 @@ fun print2d(
         for (c in row.indices) {
             val cell = row[c]
             if (colors != null) {
-                if (colors.containsKey(Colors.Red) && Pair(r,c) in colors[Colors.Red]!!) {
+                if (colors.containsKey(Colors.Red) && Pair(r, c) in colors[Colors.Red]!!) {
                     line += red + cell + reset
-                } else if (colors.containsKey(Colors.Yellow) && Pair(r,c) in colors[Colors.Yellow]!!) {
+                } else if (colors.containsKey(Colors.Yellow) && Pair(r, c) in colors[Colors.Yellow]!!) {
                     line += yellow + cell + reset
-                } else  if (colors.containsKey(Colors.Green) && Pair(r,c) in colors[Colors.Green]!!) { // or part of adjacent number
+                } else if (colors.containsKey(Colors.Green) && Pair(
+                        r,
+                        c
+                    ) in colors[Colors.Green]!!
+                ) { // or part of adjacent number
                     line += green + cell + reset
                 } else {
                     line += cell
@@ -80,3 +87,34 @@ fun print2d(
  * Calculate the power of a number
  */
 infix fun Number.toPowerOf(exponent: Number): Int = (this.toDouble().pow(exponent.toDouble())).toInt()
+
+/**
+ * Infinitely repeat a sequence.
+ */
+fun <T> Sequence<T>.repeat() = sequence { while (true) yieldAll(this@repeat) }
+
+/**
+ * Get the least common multiple for two Long numbers.
+ */
+fun leastCommonMultiple(a: Long, b: Long): Long {
+    val larger = if (a > b) a else b
+    val maxLcm = a * b
+    val iterator = generateSequence(larger) {
+        val next = it + larger
+        if (next < maxLcm) next else null
+    }.iterator()
+    while (iterator.hasNext()) {
+        val lcm = iterator.next()
+        if (lcm % a == 0L && lcm % b == 0L) return lcm
+    }
+    return maxLcm
+}
+
+/**
+ * Get the least common multiple for a list of Long numbers.
+ */
+fun List<Long>.leastCommonMultiple(): Long {
+    return this.subList(1, this.size).fold(this[0]) { acc, n ->
+        leastCommonMultiple(acc, n)
+    }
+}
