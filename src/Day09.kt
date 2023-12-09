@@ -1,20 +1,20 @@
 fun main() { // --- Day 9: Mirage Maintenance ---
 
-    fun getAllDiffs(values: List<Int>): List<List<Int>> {
+    fun getDiffs(values: List<Int>): List<List<Int>> {
         val allDiffs = arrayListOf(values)
         var cur = values
 
-        while (cur.any { n -> n != 0 }) {
+        do {
             cur = cur.zipWithNext().map { (a, b) -> b - a }
             allDiffs.add(cur)
-        }
+        } while (cur.any { n -> n != 0 })
 
         return allDiffs.reversed()
     }
 
-    fun historyValue(values: List<Int>): Int = getAllDiffs(values).fold(0) { diff, lst -> lst.first() - diff }
+    fun historyValue(values: List<Int>): Int = getDiffs(values).fold(0) { diff, lst -> lst.first() - diff }
 
-    fun futureValue(values: List<Int>): Int = getAllDiffs(values).fold(0) { diff, lst -> lst.last() + diff }
+    fun futureValue(values: List<Int>): Int = getDiffs(values).fold(0) { diff, lst -> lst.last() + diff }
 
     fun part1(input: List<String>): Int {
         return input
