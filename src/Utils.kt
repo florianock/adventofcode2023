@@ -166,13 +166,14 @@ fun Array<CharArray>.transpose(): Array<CharArray> {
  * Get all pairs of a Collection.
  */
 fun <T> Iterable<T>.allPairs(): Set<Pair<T, T>> {
-    val result = this.runningFoldIndexed(arrayListOf<Pair<T, T>>()) { idx, acc, _ ->
-        val arr = this.toList()
-        for (i in (idx + 1)..<arr.size) {
-            acc.add(Pair(arr[idx], arr[i]))
+    val unpaired = this.toMutableSet()
+    val result = mutableSetOf<Pair<T, T>>()
+    for (a in this) {
+        unpaired.remove(a)
+        for (b in unpaired) {
+            result.add(Pair(a, b))
         }
-        acc
-    }.flatten().toSet()
+    }
     return result
 }
 
