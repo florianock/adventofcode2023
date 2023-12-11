@@ -167,14 +167,13 @@ fun Array<CharArray>.transpose(): Array<CharArray> {
  */
 fun <T> Iterable<T>.allPairs(): Set<Pair<T, T>> {
     val unpaired = this.toMutableSet()
-    val result = mutableSetOf<Pair<T, T>>()
-    for (a in this) {
+    return this.fold(mutableSetOf()) { acc, a ->
         unpaired.remove(a)
         for (b in unpaired) {
-            result.add(Pair(a, b))
+            acc.add(Pair(a, b))
         }
+        acc
     }
-    return result
 }
 
 /**

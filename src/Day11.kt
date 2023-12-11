@@ -15,10 +15,12 @@ fun main() {
     }
 
     fun Galaxies.expand(factor: Int): Galaxies {
-        val (rc, cc) = this.unzip()
+        val (rc, cc) = this.unzip().let { (rs, cs) -> Pair(rs.toSet(), cs.toSet()) }
         return this.map { (a, b) ->
-            Pair(a + (0..<a).count { it !in rc } * (factor - 1L),
-                b + (0..<b).count { it !in cc } * (factor - 1L))
+            Pair(
+                a + ((0..<a) - rc).size * (factor - 1L),
+                b + ((0..<b) - cc).size * (factor - 1L)
+            )
         }.toSet()
     }
 
