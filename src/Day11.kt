@@ -1,7 +1,6 @@
 typealias Galaxies = Set<Pair<Long, Long>>
 
 fun main() {
-
     fun getGalaxies(space: List<String>): Galaxies {
         val result = mutableSetOf<Pair<Long, Long>>()
         for (r in space.indices) {
@@ -16,17 +15,20 @@ fun main() {
 
     fun Galaxies.expand(factor: Int): Galaxies {
         val (rc, cc) = this.unzip().let { (rs, cs) -> Pair(rs.toSet(), cs.toSet()) }
-        return this.map { (a, b) ->
-            Pair(
-                a + ((0..<a) - rc).size * (factor - 1L),
-                b + ((0..<b) - cc).size * (factor - 1L)
+        val result = mutableSetOf<Pair<Long, Long>>()
+        for ((a, b) in this) {
+            result.add(
+                Pair(
+                    a + ((0..<a) - rc).size * (factor - 1L),
+                    b + ((0..<b) - cc).size * (factor - 1L)
+                )
             )
-        }.toSet()
+        }
+        return result
     }
 
     fun part1(input: List<String>, factor: Int): Long {
-        val galaxies = getGalaxies(input)
-        return galaxies
+        return getGalaxies(input)
             .expand(factor)
             .allPairs()
             .sumOf { (a, b) -> manhattanDistance(a, b) }
