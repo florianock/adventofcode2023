@@ -1,6 +1,6 @@
 typealias Galaxies = Set<Pair<Long, Long>>
 
-fun main() {
+fun main() { // --- Day 11: Cosmic Expansion ---
     fun getGalaxies(space: List<String>): Galaxies {
         val result = mutableSetOf<Pair<Long, Long>>()
         for (r in space.indices) {

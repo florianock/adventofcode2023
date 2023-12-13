@@ -1,6 +1,6 @@
 enum class Direction { North, East, South, West }
 
-fun main() {
+fun main() { // --- Day 10: Pipe Maze ---
     val visuals = true
 
     // verticaal: 7F; 7|; |F; J|; |L; JF; JL; 7L
