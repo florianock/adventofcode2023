@@ -8,7 +8,7 @@ suspend fun main() { // --- Day 5: If You Give A Seed A Fertilizer ---
         val delta = dest - src
     }
 
-    fun parseInput(input: String): Pair<List<Long>, List<List<Mapping>>> {
+    fun parse(input: String): Pair<List<Long>, List<List<Mapping>>> {
         val split = input.split("\n\n").map { l ->
             l.slice(l.indexOfFirst { it.isDigit() }..<l.length)
         }
@@ -22,30 +22,29 @@ suspend fun main() { // --- Day 5: If You Give A Seed A Fertilizer ---
         return Pair(seeds, mappingsList)
     }
 
-    fun part1(input: String): Long {
-        val (seeds, mappingsList) = parseInput(input)
-        return mappingsList.fold(seeds) { acc, mappings ->
+    fun followMappings(mappingsList: List<List<Mapping>>, seeds: LongStream): Long =
+        mappingsList.fold(seeds) { acc, mappings ->
             acc.map { n ->
                 mappings.find { m -> m.src <= n && (n - m.src) < m.rng }?.let { map -> n + map.delta } ?: n
             }
-        }.min()
+        }.min().asLong
+
+    fun part1(input: String): Long {
+        val (seeds, mappingsList) = parse(input)
+        return followMappings(mappingsList, seeds.stream().mapToLong(Long::toLong))
     }
 
     suspend fun part2(input: String): Long {
-        val (seeds, mappingsList) = parseInput(input)
+        val (seeds, mappingsList) = parse(input)
         val ranges = seeds.chunked(2).map { (start, length) -> LongStream.range(start, start + length) }
         val res = coroutineScope {
-            ranges.map { r ->
+            ranges.map {
                 async {
-                    mappingsList.fold(r) { acc, mappings ->
-                        acc.map { n ->
-                            mappings.find { m -> m.src <= n && (n - m.src) < m.rng }?.let { map -> n + map.delta } ?: n
-                        }
-                    }.min()
+                    followMappings(mappingsList, it)
                 }
             }
         }.awaitAll()
-        return res.minOfOrNull { x -> x.asLong } ?: 0
+        return res.min()
     }
 
     // test if implementation meets criteria from the description, like:
