@@ -191,3 +191,13 @@ fun List<String>.toGrid(): Array<CharArray> {
  */
 fun manhattanDistance(a: Pair<Long, Long>, b: Pair<Long, Long>): Long =
     abs(a.first - b.first) + abs(a.second - b.second)
+
+/**
+ * Check if direction is oriented vertically.
+ */
+fun Direction.isVertical() = this == Direction.North || this == Direction.South
+
+/**
+ * Check if direction is oriented horizontally.
+ */
+fun Direction.isHorizontal() = this == Direction.East || this == Direction.West
