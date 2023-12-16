@@ -2,7 +2,8 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
 
-suspend fun main() {
+suspend fun main() { // --- Day 16: The Floor Will Be Lava ---
+
     val visitedMemorySize = 15_000
     val previousVisitedSizes = IntArray(visitedMemorySize) { -1 }
 
