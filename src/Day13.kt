@@ -83,11 +83,11 @@ fun main() { // --- Day 13: Point of Incidence ---
     check(part1(testInput) == 405)
     check(part2(testInput) == 400)
 
-//    val testInput2 = readInput("Day13_test2")
+//    val testInput2 = readInput("Day13_pattern91")
 //    check(part1(testInput2) == 300)  // colsfirst: 300; rowsfirst: 300
 //    check(part2(testInput2) == 1400) // colsfirst: 1; rowsfirst: 1400
 
-//    val testInput3 = readInput("Day13_test3")
+//    val testInput3 = readInput("Day13_pattern62")
 //    check(part1(testInput3) == 400) // colsfirst: 400; rowsfirst: 400
 //    check(part2(testInput3) == 1) // colsfirst: 1; rowsfirst: 100
 
