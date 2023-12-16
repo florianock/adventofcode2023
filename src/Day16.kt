@@ -61,8 +61,7 @@ suspend fun main() {
             }
         }
 
-    fun completePath(startPosition: Pair<Pair<Int, Int>, Direction>, grid: Array<CharArray>)
-            : Pair<Set<Pair<Pair<Int, Int>, Direction>>, Set<Pair<Int, Int>>> {
+    fun completePath(startPosition: Pair<Pair<Int, Int>, Direction>, grid: Array<CharArray>): Int {
         val toVisit = mutableSetOf(startPosition)
         val visited = mutableSetOf<Pair<Int, Int>>()
         var previousCounter = 0
@@ -79,20 +78,13 @@ suspend fun main() {
             }.toSet()
             toVisit += newPoints
         }
-        return Pair(toVisit, visited)
+        return visited.size
     }
 
-    fun part1(input: List<String>): Int {
-        val grid = Array(input.size) { i -> CharArray(input[i].length) { j -> input[i][j] } }
-        val (_, energized) = completePath(Pair(Pair(0, 0), Direction.East), grid)
-        grid.forEachIndexed { r, row ->
-            println(row.mapIndexed { c, _ ->
-                if (energized.contains(Pair(r, c))) '#'
-                else '.'
-            }.joinToString(""))
-        }
-        return energized.size
-    }
+    fun part1(input: List<String>) =
+        completePath(
+            Pair(Pair(0, 0), Direction.East),
+            Array(input.size) { i -> CharArray(input[i].length) { j -> input[i][j] } })
 
     suspend fun part2(input: List<String>): Int {
         val grid = Array(input.size) { i -> CharArray(input[i].length) { j -> input[i][j] } }
@@ -109,12 +101,11 @@ suspend fun main() {
             starts.add(Pair(Pair(numRows - 1, j), Direction.North))
         }
 
-        println("Founding the most energized for ${starts.size} start points...")
+        println("Finding the most energized for ${starts.size} start points...")
         return coroutineScope {
             starts.map { startPoint ->
                 async {
-                    val (_, energized) = completePath(startPoint, grid)
-                    energized.size
+                    completePath(startPoint, grid)
                 }
             }.awaitAll()
         }.max()
