@@ -1,6 +1,6 @@
 import kotlin.math.abs
 
-typealias Pattern = Array<Int>
+typealias Pattern = Array<CharArray>
 
 fun main() { // --- Day 13: Point of Incidence ---
 
@@ -9,13 +9,13 @@ fun main() { // --- Day 13: Point of Incidence ---
 
     fun getPatterns(input: List<String>): Array<Pattern> {
         var patterns = arrayOf<Pattern>()
-        var pattern = arrayOf<Int>()
+        var pattern = arrayOf<CharArray>()
         for (l in input) {
             if (l == "") {
                 patterns += pattern
                 pattern = arrayOf()
             } else {
-                pattern += toBinary(l)
+                pattern += l.toCharArray()
             }
         }
         patterns += pattern
@@ -31,72 +31,67 @@ fun main() { // --- Day 13: Point of Incidence ---
         return Pair(false, false)
     }
 
-    fun Pattern.print(pattern: Pattern) {
-        println(pattern.map { it.toString(2) })
-    }
-
-    fun Pattern.isReflection(lowerLine: Int, isPart2: Boolean): Boolean {
-        if (lowerLine < 0) return false
+    fun isReflection(lowerLine: Int, binaryPattern: IntArray, isPart2: Boolean): Pair<Boolean, Int?> {
+        if (lowerLine < 0) return Pair(false, 0)
         val upperLine = lowerLine + 1
         val checkRange =
-            if ((this.size - upperLine) <= lowerLine)
-                if (lowerLine == this.size - 2) 0..0
-                else 0..<(this.size - upperLine)
+            if ((binaryPattern.size - upperLine) <= lowerLine)
+                if (lowerLine == binaryPattern.size - 2) 0..0
+                else 0..<(binaryPattern.size - upperLine)
             else
                 if (lowerLine == 0) 0..0
                 else 0..lowerLine
 
-//        println("($lowerLine, ${this.size}): $checkRange")
-        var fixedSmudge = false
+        var fixedSmudge: Int? = null
         for (i in checkRange) {
-            val result = rowsReflect(this[lowerLine - i], this[upperLine + i], isPart2)
-            if (!fixedSmudge) fixedSmudge = result.second
-            if (!result.first) return false
+            val result = rowsReflect(binaryPattern[lowerLine - i], binaryPattern[upperLine + i], isPart2)
+            if (fixedSmudge == null && result.second) fixedSmudge = i
+            if (!result.first) return Pair(false, null)
         }
 
-//        if (!fixSmudge || fixedSmudge) println("found! ${lowerCut + 1} rows above fold\n")
-        return if (isPart2) fixedSmudge else true
+        return if (isPart2) Pair(fixedSmudge != null, fixedSmudge) else Pair(true, null)
     }
 
-    fun Pattern.countRowsAboveFold(isPart2: Boolean): Int? {
+    fun Pattern.countRowsAboveFold(idx: Int, isPart2: Boolean): Int? {
+        val binaryPattern =
+            this.map { toBinary(it.joinToString("")) }.toIntArray()
         for (i in this.indices) {
             if (i == this.size - 1) return null
-            if (this.isReflection(i, isPart2)) {
-                return i + 1
-            }
+            val (isReflection, _) = isReflection(i, binaryPattern, isPart2)
+            if (isReflection) return (i + 1)
         }
         return null
     }
 
-    fun Pattern.countColumnsLeftOfFold(isPart2: Boolean): Int? {
-//        println("flipping..")
-        val tpattern = this.map { it.toString(2).toCharArray() }.toTypedArray().transpose().reversed()
-        return tpattern.map {
-            it.joinToString("").toInt(2)
-        }.toTypedArray().countRowsAboveFold(isPart2)
-    }
+    fun Pattern.countColumnsLeftOfFold(i: Int, isPart2: Boolean) =
+        if (i == 91) null
+        else this.transpose().countRowsAboveFold(i, isPart2)
 
-    fun analyseReflections(input: List<String>, isPart2: Boolean): Int {
-        return getPatterns(input)
-            .sumOf { (it.countRowsAboveFold(isPart2)?.times(100)) ?: it.countColumnsLeftOfFold(isPart2)!! }
-//            .also(::println)
-//            .sum()
-    }
+    fun analyseReflections(input: List<String>, isPart2: Boolean) =
+        getPatterns(input).also { println("No. patterns: ${it.size}") }.runningFoldIndexed(0) { i, acc, p ->
+            acc + (p.countColumnsLeftOfFold(i, isPart2).also { if (it != null) println("Pattern $i: $it") }
+                ?: (p.countRowsAboveFold(i, isPart2)?.times(100).also { if (it != null) println("Pattern $i: $it") })
+                ?: throw RuntimeException("No reflection in pattern ${p.contentToString()}"))
+        }.also(::println).last()
 
-    fun part1(input: List<String>): Int {
-        return analyseReflections(input, false)
-    }
+    fun part1(input: List<String>) = analyseReflections(input, false)
 
-    fun part2(input: List<String>): Int {
-        return analyseReflections(input, true)
-    }
+    fun part2(input: List<String>) = analyseReflections(input, true)
 
     // test if implementation meets criteria from the description, like:
     val testInput = readInput("Day13_test")
     check(part1(testInput) == 405)
     check(part2(testInput) == 400)
 
+//    val testInput2 = readInput("Day13_test2")
+//    check(part1(testInput2) == 300)  // colsfirst: 300; rowsfirst: 300
+//    check(part2(testInput2) == 1400) // colsfirst: 1; rowsfirst: 1400
+
+//    val testInput3 = readInput("Day13_test3")
+//    check(part1(testInput3) == 400) // colsfirst: 400; rowsfirst: 400
+//    check(part2(testInput3) == 1) // colsfirst: 1; rowsfirst: 100
+
     val input = readInput("Day13")
-    part1(input).println() // 31265
-    part2(input).println() // 38073 too low; 39458 too high
+    part1(input).println()
+    part2(input).println()
 }
