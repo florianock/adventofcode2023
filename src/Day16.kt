@@ -1,4 +1,10 @@
-fun main() {
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
+
+suspend fun main() {
+    val visitedMemorySize = 15_000
+    val previousVisitedSizes = IntArray(visitedMemorySize) { -1 }
 
     fun getNextPositions(next: Pair<Int, Int>, symbol: Char, heading: Direction): Set<Pair<Pair<Int, Int>, Direction>> =
         if (heading.isVertical()) {
@@ -59,12 +65,11 @@ fun main() {
             : Pair<Set<Pair<Pair<Int, Int>, Direction>>, Set<Pair<Int, Int>>> {
         val toVisit = mutableSetOf(startPosition)
         val visited = mutableSetOf<Pair<Int, Int>>()
-        val visitedMemorySize = 15_000
-        val previousVisitedSizes = Array(visitedMemorySize) { -1 }
         var previousCounter = 0
         var steps = 0
-        while (toVisit.isNotEmpty() && !previousVisitedSizes.all { it == visited.size }) {
-            previousVisitedSizes[previousCounter++] = visited.size
+        val memory = previousVisitedSizes.clone()
+        while (memory.any { it != visited.size } && toVisit.isNotEmpty()) {
+            memory[previousCounter++] = visited.size
             if (previousCounter == visitedMemorySize) previousCounter = 0
             val (next, heading) = toVisit.first().also { toVisit.remove(it) }
             val result = getNextPositions(next, grid[next.first][next.second], heading)
@@ -73,7 +78,7 @@ fun main() {
                 0 <= it.first.first && it.first.first < grid.size &&
                         0 <= it.first.second && it.first.second < grid[0].size
             }.toSet()
-            toVisit.addAll(newPoints)
+            toVisit += newPoints
             steps++
         }
         return Pair(toVisit, visited)
@@ -91,11 +96,8 @@ fun main() {
         return energized.size
     }
 
-    fun part2(input: List<String>): Int {
+    suspend fun part2(input: List<String>): Int {
         val grid = Array(input.size) { i -> CharArray(input[i].length) { j -> input[i][j] } }
-        var max: Triple<Int, Pair<Pair<Int, Int>, Direction>, Set<Pair<Int, Int>>> =
-            Triple(0, Pair(Pair(0, 0), Direction.East), setOf())
-
         val numRows = input.size
         val numCols = input[0].length
 
@@ -109,20 +111,15 @@ fun main() {
             starts.add(Pair(Pair(numRows - 1, j), Direction.North))
         }
 
-        println("Found ${starts.size} start points.")
-        for ((idx, startPoint) in starts.withIndex()) {
-            if (idx % 44 == 0) println("After $idx start points: max size is ${max.first}.")
-            val (_, energized) = completePath(startPoint, grid)
-            if (energized.size > max.first) max = Triple(energized.size, startPoint, energized)
-        }
-
-        grid.forEachIndexed { r, row ->
-            println(row.mapIndexed { c, _ ->
-                if (max.third.contains(Pair(r, c))) '#'
-                else '.'
-            }.joinToString(""))
-        }
-        return max.third.size
+        println("Found ${starts.size} start points...")
+        return coroutineScope {
+            starts.map { startPoint ->
+                async {
+                    val (_, energized) = completePath(startPoint, grid)
+                    energized.size
+                }
+            }.awaitAll()
+        }.max()
     }
 
     // test if implementation meets criteria from the description, like:
