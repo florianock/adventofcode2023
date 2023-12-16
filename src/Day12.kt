@@ -27,19 +27,12 @@ fun main() { // --- Day 12: Hot Springs ---
         return setOf(
             permutations(input.replaceFirst('?', '.')),
             permutations(input.replaceFirst('?', '#'))
-        )
-            .flatten()
-            .toSet()
+        ).flatten().toSet()
     }
 
     fun countSolutions(line: String): Int {
         val (map, groups) = getParts(line)
-        val regex = getRegex(groups)
-
-        val solutions = permutations(map)
-        val res = solutions.map { s -> regex.matches(s) }
-        val count = res.count { it }
-        return count
+        return permutations(map).map { s -> getRegex(groups).matches(s) }.count { it }
     }
 
     fun part1(input: List<String>): Int {

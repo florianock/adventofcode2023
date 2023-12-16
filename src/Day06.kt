@@ -3,6 +3,7 @@ import kotlin.math.floor
 import kotlin.math.sqrt
 
 fun main() { // --- Day 6: Wait For It ---
+
     fun parse(input: List<String>): List<Pair<Long, Long>> {
         val split = input.map { line ->
             """(\d+)""".toRegex().findAll(line).map { m -> m.groupValues[1].toLong() }.toList()
@@ -10,18 +11,30 @@ fun main() { // --- Day 6: Wait For It ---
         return split[0].zip(split[1])
     }
 
-    fun calculateWinningStreak(time: Long, record: Long): Pair<Long, Long> {
-        // solve: -x^2 + time*x - record = 0
-        val low = (time - sqrt((time * time - 4.0 * record))) / 2.0
-        var startWinning = ceil(low)
-        if (startWinning == low) startWinning += 1.0
+    // solve: -x^2 + time*x - record = 0
+    fun solveAbc(time: Long, record: Long, op: Char): Long {
+        var result: Double
+        val discriminant = sqrt((time * time - 4.0 * record))
+        when (op) {
+            '-' -> {
+                val low = (time - discriminant) / 2.0
+                result = ceil(low)
+                if (low == result) result += 1.0
+            }
 
-        val high = (time + sqrt((time * time - 4.0 * record))) / 2.0
-        var endWinning = floor(high)
-        if (endWinning == high) endWinning -= 1.0
+            '+' -> {
+                val high = (time + discriminant) / 2.0
+                result = floor(high)
+                if (high == result) result -= 1.0
+            }
 
-        return Pair(startWinning.toLong(), endWinning.toLong())
+            else -> throw RuntimeException("Unknown operator: $op")
+        }
+        return result.toLong()
     }
+
+    fun calculateWinningStreak(time: Long, record: Long) =
+        Pair(solveAbc(time, record, '-'), solveAbc(time, record, '+'))
 
     fun part1(input: List<String>): Int {
         val races = parse(input)

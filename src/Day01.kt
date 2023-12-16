@@ -1,21 +1,15 @@
 fun main() { //--- Day 1: Trebuchet?! ---
     val digitWords = arrayOf("one", "two", "three", "four", "five", "six", "seven", "eight", "nine")
 
-    fun getCalibrationValue(line: String): Int {
-        return "${line.first { it.isDigit() }}${line.last { it.isDigit() }}".toInt()
-    }
+    fun getCalibrationValue(line: String) = "${line.first { it.isDigit() }}${line.last { it.isDigit() }}".toInt()
 
     fun digitOf(d: String): Int = digitWords.indexOf(d) + 1
 
-    fun part1(input: List<String>): Int {
-        return input.sumOf { line -> getCalibrationValue(line) }
-    }
+    fun part1(input: List<String>) = input.sumOf { line -> getCalibrationValue(line) }
 
-    fun part2(input: List<String>): Int {
-        return input.sumOf { line ->
-            val parsed = digitWords.fold(line) { acc, d -> acc.replace(d, d + digitOf(d) + d) }
-            getCalibrationValue(parsed)
-        }
+    fun part2(input: List<String>) = input.sumOf { line ->
+        val parsed = digitWords.fold(line) { acc, d -> acc.replace(d, d + digitOf(d) + d) }
+        getCalibrationValue(parsed)
     }
 
     // test if implementation meets criteria from the description, like:

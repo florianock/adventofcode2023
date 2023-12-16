@@ -1,10 +1,12 @@
 fun main() { // --- Day 8: Haunted Wasteland ---
+
     fun parse(input: String): Pair<Iterator<Char>, Map<String, Pair<String, String>>> {
         val parts = input.split("\n\n")
         val steps = parts[0].asSequence().repeat().iterator()
         val map = parts[1].split("\n").associate { l ->
-            val m = Regex("""^(\w+) = \((\w+), (\w+)\)$""").matchEntire(l) ?: throw Error("Incorrect input: $l")
-            m.groupValues[1] to Pair(m.groupValues[2], m.groupValues[3])
+            val (pos, left, right) = Regex("""^(\w+) = \((\w+), (\w+)\)$""").matchEntire(l)?.destructured
+                ?: throw RuntimeException("Invalid instruction: $l")
+            pos to Pair(left, right)
         }
         return Pair(steps, map)
     }
@@ -13,11 +15,11 @@ fun main() { // --- Day 8: Haunted Wasteland ---
         var counter = 0
         var pos = startPosition
         while (!pos.endsWith('Z')) {
-            val p = map[pos] ?: throw Error("Unknown position: $pos")
+            val p = map[pos] ?: throw RuntimeException("Unknown position: $pos")
             pos = when (val step = steps.next()) {
                 'L' -> p.first
                 'R' -> p.second
-                else -> throw Error("Unknown step: $step")
+                else -> throw RuntimeException("Unknown step: $step")
             }
             counter++
         }
@@ -33,7 +35,7 @@ fun main() { // --- Day 8: Haunted Wasteland ---
         val (steps, map) = parse(input)
         return map.keys
             .filter { it.endsWith('A') }
-            .map { startPosition -> getDistanceToGoal(startPosition, steps, map).toLong() }
+            .map { getDistanceToGoal(it, steps, map).toLong() }
             .leastCommonMultiple()
     }
 

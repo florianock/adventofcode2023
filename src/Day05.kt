@@ -4,6 +4,7 @@ import kotlinx.coroutines.coroutineScope
 import java.util.stream.LongStream
 
 suspend fun main() { // --- Day 5: If You Give A Seed A Fertilizer ---
+
     data class Mapping(val src: Long, val dest: Long, val rng: Long) {
         val delta = dest - src
     }
@@ -22,7 +23,7 @@ suspend fun main() { // --- Day 5: If You Give A Seed A Fertilizer ---
         return Pair(seeds, mappingsList)
     }
 
-    fun followMappings(mappingsList: List<List<Mapping>>, seeds: LongStream): Long =
+    fun followMappings(mappingsList: List<List<Mapping>>, seeds: LongStream) =
         mappingsList.fold(seeds) { acc, mappings ->
             acc.map { n ->
                 mappings.find { m -> m.src <= n && (n - m.src) < m.rng }?.let { map -> n + map.delta } ?: n

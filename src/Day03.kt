@@ -1,6 +1,6 @@
 fun main() { // --- Day 3: Gear Ratios ---
+
     val visuals = true
-    var result: Pair<List<Int>, List<Int>>? = null
 
     fun getPartsAndGears(input: List<String>): Pair<List<Int>, List<Int>> {
         var matrix = arrayOf<Array<Char>>()
@@ -22,7 +22,7 @@ fun main() { // --- Day 3: Gear Ratios ---
                     if (symbols.containsKey(char)) {
                         (symbols[char])!!.add(Pair(r, c))
                     } else {
-                        symbols[char] = mutableSetOf(Pair(r,c ))
+                        symbols[char] = mutableSetOf(Pair(r, c))
                     }
                     if (num != "" && pts.isNotEmpty()) {
                         numbers += Pair(num.toInt(), pts)
@@ -45,32 +45,48 @@ fun main() { // --- Day 3: Gear Ratios ---
             matrix += row
         }
 
-        val gears = symbols['*']!!.filter { pair -> numbers.filter { num -> (num.second intersect neighbors(pair).toSet()).isNotEmpty() }.size == 2 }
-        val gearsCombined = gears.map { g -> Pair(g, (numbers.filter { num -> (num.second intersect neighbors(g).toSet()).isNotEmpty()}.map { n -> n.first })) }
-        val parts = numbers.filter { n -> symbols.any { (_, v) -> (n.second intersect v.flatMap { p -> neighbors(p) }.toSet()).isNotEmpty() } }.flatMap { n -> n.second}
+        val gears =
+            symbols['*']!!.filter { pair -> numbers.filter { num -> (num.second intersect neighbors(pair).toSet()).isNotEmpty() }.size == 2 }
+        val gearsCombined = gears.map { g ->
+            Pair(
+                g,
+                (numbers.filter { num -> (num.second intersect neighbors(g).toSet()).isNotEmpty() }
+                    .map { n -> n.first })
+            )
+        }
+        val parts = numbers.filter { n ->
+            symbols.any { (_, v) ->
+                (n.second intersect v.flatMap { p -> neighbors(p) }.toSet()).isNotEmpty()
+            }
+        }.flatMap { n -> n.second }
 
         if (visuals) {
-            val gearNumbers = numbers.filter { n -> gears.any { s -> (n.second intersect neighbors(s).toSet()).isNotEmpty()}}.flatMap { num -> num.second }
+            val gearNumbers =
+                numbers.filter { n -> gears.any { s -> (n.second intersect neighbors(s).toSet()).isNotEmpty() } }
+                    .flatMap { num -> num.second }
             val gearParts = gearsCombined.map { (k, _) -> k }.toSet() + gearNumbers.toSet()
-            val noParts = numbers.filter { n -> (n.second intersect gearNumbers.toSet()).isEmpty() && (n.second intersect parts.toSet()).isEmpty()}.flatMap { n -> n.second }.toSet()
-            print2d(matrix, mapOf(Pair(Colors.Red, noParts), Pair(Colors.Green, parts.toSet() - gearParts), Pair(Colors.Yellow, gearParts)))
+            val noParts =
+                numbers.filter { n -> (n.second intersect gearNumbers.toSet()).isEmpty() && (n.second intersect parts.toSet()).isEmpty() }
+                    .flatMap { n -> n.second }.toSet()
+            print2d(
+                matrix,
+                mapOf(
+                    Pair(Colors.Red, noParts),
+                    Pair(Colors.Green, parts.toSet() - gearParts),
+                    Pair(Colors.Yellow, gearParts)
+                )
+            )
         }
 
         return Pair(
-            numbers.filter { n -> n.second.any { p -> p in parts }}.map { n -> n.first },
+            numbers.filter { n -> n.second.any { p -> p in parts } }.map { n -> n.first },
             gearsCombined.map { g -> g.second.fold(1) { acc, i -> acc * i } }
         )
     }
 
-    fun part1(input: List<String>): Int {
-        if (result == null) result = getPartsAndGears(input)
-        return result!!.first.sum()
-    }
+    fun part1(input: List<String>) = getPartsAndGears(input).first.sum()
 
-    fun part2(input: List<String>): Int {
-        if (result == null) result = getPartsAndGears(input)
-        return result!!.second.sum()
-    }
+    fun part2(input: List<String>) = getPartsAndGears(input).second.sum()
 
     // test if implementation meets criteria from the description, like:
     val testInput = readInput("Day03_test")
@@ -78,7 +94,6 @@ fun main() { // --- Day 3: Gear Ratios ---
     check(part2(testInput) == 467835)
 
     val input = readInput("Day03")
-    result = null
-    part1(input).println() // 539590
-    part2(input).println() // 80703636
+    part1(input).println()
+    part2(input).println()
 }
