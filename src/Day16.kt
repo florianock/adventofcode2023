@@ -66,7 +66,6 @@ suspend fun main() {
         val toVisit = mutableSetOf(startPosition)
         val visited = mutableSetOf<Pair<Int, Int>>()
         var previousCounter = 0
-        var steps = 0
         val memory = previousVisitedSizes.clone()
         while (memory.any { it != visited.size } && toVisit.isNotEmpty()) {
             memory[previousCounter++] = visited.size
@@ -79,7 +78,6 @@ suspend fun main() {
                         0 <= it.first.second && it.first.second < grid[0].size
             }.toSet()
             toVisit += newPoints
-            steps++
         }
         return Pair(toVisit, visited)
     }
@@ -111,7 +109,7 @@ suspend fun main() {
             starts.add(Pair(Pair(numRows - 1, j), Direction.North))
         }
 
-        println("Found ${starts.size} start points...")
+        println("Founding the most energized for ${starts.size} start points...")
         return coroutineScope {
             starts.map { startPoint ->
                 async {
