@@ -17,7 +17,7 @@ fun main() { // --- Day 13: Point of Incidence ---
         return patterns
     }
 
-    fun rowsReflect(a: CharArray, b: CharArray, isPart2: Boolean): Int {
+    fun rowsReflect(a: CharArray, b: CharArray): Int {
         return a.mapIndexed { i, c ->
             if (c != b[i]) 1
             else 0
@@ -37,7 +37,7 @@ fun main() { // --- Day 13: Point of Incidence ---
 
         var errors = 0
         for (i in checkRange) {
-            errors += rowsReflect(this[lowerLine - i], this[upperLine + i], isPart2)
+            errors += rowsReflect(this[lowerLine - i], this[upperLine + i])
             if (errors > 1) return false
         }
 
