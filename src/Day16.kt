@@ -4,9 +4,6 @@ import kotlinx.coroutines.coroutineScope
 
 suspend fun main() { // --- Day 16: The Floor Will Be Lava ---
 
-    val visitedMemorySize = 15_000
-    val previousVisitedSizes = IntArray(visitedMemorySize) { -1 }
-
     fun getNextPositions(next: Pair<Int, Int>, symbol: Char, heading: Direction): Set<Pair<Pair<Int, Int>, Direction>> =
         if (heading.isVertical()) {
             when (symbol) {
@@ -34,7 +31,7 @@ suspend fun main() { // --- Day 16: The Floor Will Be Lava ---
                     )
                 )
             }
-        } else {
+        } else if (heading.isHorizontal()) {
             when (symbol) {
                 '\\' -> setOf(
                     Pair(
@@ -60,26 +57,22 @@ suspend fun main() { // --- Day 16: The Floor Will Be Lava ---
                     )
                 )
             }
-        }
+        } else throw RuntimeException("Invalid heading: $heading")
 
     fun completePath(startPosition: Pair<Pair<Int, Int>, Direction>, grid: Array<CharArray>): Int {
-        val toVisit = mutableSetOf(startPosition)
-        val visited = mutableSetOf<Pair<Int, Int>>()
-        var previousCounter = 0
-        val memory = previousVisitedSizes.clone()
-        while (memory.any { it != visited.size } && toVisit.isNotEmpty()) {
-            memory[previousCounter++] = visited.size
-            if (previousCounter == visitedMemorySize) previousCounter = 0
-            val (next, heading) = toVisit.first().also { toVisit.remove(it) }
+        val toVisit = ArrayDeque(setOf(startPosition))
+        val visited = mutableSetOf<Pair<Pair<Int, Int>, Direction>>()
+        while (toVisit.isNotEmpty()) {
+            val (next, heading) = toVisit.removeFirst()
             val result = getNextPositions(next, grid[next.first][next.second], heading)
-            visited.add(next)
-            val newPoints = result.filter {
+            visited.add(Pair(next, heading))
+            result.filterTo(toVisit) {
                 0 <= it.first.first && it.first.first < grid.size &&
-                        0 <= it.first.second && it.first.second < grid[0].size
-            }.toSet()
-            toVisit += newPoints
+                        0 <= it.first.second && it.first.second < grid[0].size &&
+                        !visited.contains(it)
+            }
         }
-        return visited.size
+        return visited.distinctBy { (position, _) -> position }.size
     }
 
     fun part1(input: List<String>) =
