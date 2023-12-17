@@ -201,3 +201,16 @@ fun Direction.isVertical() = this == Direction.North || this == Direction.South
  * Check if direction is oriented horizontally.
  */
 fun Direction.isHorizontal() = this == Direction.East || this == Direction.West
+
+/**
+ * Convert a String to an IntArray.
+ */
+fun String.toIntArray(radix: Int = 10) = this.map { it.digitToInt(radix) }.toIntArray()
+
+fun String.toBooleanArray(zeroChar: Char = '0', oneChar: Char = '1') = this.map {
+    when (it) {
+        zeroChar -> false
+        oneChar -> true
+        else -> throw IllegalArgumentException("Unknown character $it")
+    }
+}.toBooleanArray()
