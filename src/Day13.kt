@@ -1,11 +1,6 @@
-import kotlin.math.abs
-
 typealias Pattern = Array<CharArray>
 
 fun main() { // --- Day 13: Point of Incidence ---
-
-    fun toBinary(line: String): Int =
-        line.replace('.', '0').replace('#', '1').reversed().toInt(2)
 
     fun getPatterns(input: List<String>): Array<Pattern> {
         var patterns = arrayOf<Pattern>()
@@ -22,57 +17,49 @@ fun main() { // --- Day 13: Point of Incidence ---
         return patterns
     }
 
-    fun rowsReflect(a: Int, b: Int, isPart2: Boolean): Pair<Boolean, Boolean> {
-        if (a - b == 0) return Pair(true, false)
-        else if (isPart2) {
-            val result = abs(a - b).toString(2).count { it == '1' } == 1
-            return Pair(result, true)
-        }
-        return Pair(false, false)
+    fun rowsReflect(a: CharArray, b: CharArray, isPart2: Boolean): Int {
+        return a.mapIndexed { i, c ->
+            if (c != b[i]) 1
+            else 0
+        }.sum()
     }
 
-    fun isReflection(lowerLine: Int, binaryPattern: IntArray, isPart2: Boolean): Pair<Boolean, Int?> {
-        if (lowerLine < 0) return Pair(false, 0)
+    fun Pattern.isReflection(lowerLine: Int, isPart2: Boolean): Boolean {
+        if (lowerLine < 0) return false
         val upperLine = lowerLine + 1
         val checkRange =
-            if ((binaryPattern.size - upperLine) <= lowerLine)
-                if (lowerLine == binaryPattern.size - 2) 0..0
-                else 0..<(binaryPattern.size - upperLine)
+            if ((this.size - upperLine) <= lowerLine)
+                if (lowerLine == this.size - 2) 0..0
+                else 0..<(this.size - upperLine)
             else
                 if (lowerLine == 0) 0..0
                 else 0..lowerLine
 
-        var fixedSmudge: Int? = null
+        var errors = 0
         for (i in checkRange) {
-            val result = rowsReflect(binaryPattern[lowerLine - i], binaryPattern[upperLine + i], isPart2)
-            if (fixedSmudge == null && result.second) fixedSmudge = i
-            if (!result.first) return Pair(false, null)
+            errors += rowsReflect(this[lowerLine - i], this[upperLine + i], isPart2)
+            if (errors > 1) return false
         }
 
-        return if (isPart2) Pair(fixedSmudge != null, fixedSmudge) else Pair(true, null)
+        return if (isPart2) errors == 1 else errors == 0
     }
 
-    fun Pattern.countRowsAboveFold(idx: Int, isPart2: Boolean): Int? {
-        val binaryPattern =
-            this.map { toBinary(it.joinToString("")) }.toIntArray()
+    fun Pattern.countRowsAboveFold(isPart2: Boolean): Int? {
         for (i in this.indices) {
-            if (i == this.size - 1) return null
-            val (isReflection, _) = isReflection(i, binaryPattern, isPart2)
-            if (isReflection) return (i + 1)
+            if (i == this.size - 1) break
+            if (this.isReflection(i, isPart2)) return (i + 1)
         }
         return null
     }
 
-    fun Pattern.countColumnsLeftOfFold(i: Int, isPart2: Boolean) =
-        if (i == 91) null
-        else this.transpose().countRowsAboveFold(i, isPart2)
+    fun Pattern.countColumnsLeftOfFold(isPart2: Boolean) = this.transpose().countRowsAboveFold(isPart2)
 
     fun analyseReflections(input: List<String>, isPart2: Boolean) =
-        getPatterns(input).also { println("No. patterns: ${it.size}") }.runningFoldIndexed(0) { i, acc, p ->
-            acc + (p.countColumnsLeftOfFold(i, isPart2).also { if (it != null) println("Pattern $i: $it") }
-                ?: (p.countRowsAboveFold(i, isPart2)?.times(100).also { if (it != null) println("Pattern $i: $it") })
-                ?: throw RuntimeException("No reflection in pattern ${p.contentToString()}"))
-        }.also(::println).last()
+        getPatterns(input).fold(0) { acc, p ->
+            acc + (p.countColumnsLeftOfFold(isPart2)
+                ?: (p.countRowsAboveFold(isPart2)?.times(100)
+                    ?: throw RuntimeException("No reflection in pattern ${p.map { it.joinToString("") }}")))
+        }
 
     fun part1(input: List<String>) = analyseReflections(input, false)
 
@@ -84,12 +71,12 @@ fun main() { // --- Day 13: Point of Incidence ---
     check(part2(testInput) == 400)
 
 //    val testInput2 = readInput("Day13_pattern91")
-//    check(part1(testInput2) == 300)  // colsfirst: 300; rowsfirst: 300
-//    check(part2(testInput2) == 1400) // colsfirst: 1; rowsfirst: 1400
+//    check(part1(testInput2) == 300)
+//    check(part2(testInput2) == 1400)
 
 //    val testInput3 = readInput("Day13_pattern62")
-//    check(part1(testInput3) == 400) // colsfirst: 400; rowsfirst: 400
-//    check(part2(testInput3) == 1) // colsfirst: 1; rowsfirst: 100
+//    check(part1(testInput3) == 400)
+//    check(part2(testInput3) == 1)
 
     val input = readInput("Day13")
     part1(input).println()
