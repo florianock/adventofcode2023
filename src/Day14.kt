@@ -11,77 +11,117 @@ fun main() { // --- Day 14: Parabolic Reflector Dish ---
         }
     }
 
-    fun tiltNorthAndCountLoad(input: List<String>): Int {
-        val counter = Array(input[0].length) { Pair(0, 0) }
-        return input.foldIndexed(counter) { inverseLoad, acc, row ->
-            val load = input.size - inverseLoad
-            acc.mapIndexed { i, cc ->
-                when (row[i]) {
-                    '.' -> cc.copy(second = cc.second + 1)
-                    '#' -> cc.copy(second = 0)
-                    'O' -> cc.copy(first = cc.first + load + cc.second)
-                    else -> throw RuntimeException("Unknown character: ${row[i]}")
+    fun tiltVertical(direction: Direction, input: List<String>): Set<Pair<Int, Int>> {
+        val dotsCount = IntArray(input[0].length) { 0 }
+        val (_, rocks) =
+            when (direction) {
+                Direction.North -> {
+                    input.foldIndexed(
+                        Pair(
+                            dotsCount,
+                            mutableSetOf<Pair<Int, Int>>()
+                        )
+                    ) { r, (count, rocks), row ->
+                        val newCount = count.mapIndexed { c, n ->
+                            when (row[c]) {
+                                '.' -> n + 1
+                                '#' -> 0
+                                'O' -> rocks.add(Pair(r - n, c)).let { n }
+                                else -> throw RuntimeException("Unknown character: ${row[c]}")
+                            }
+                        }.toIntArray()
+                        Pair(newCount, rocks)
+                    }
                 }
-            }.toTypedArray()
-        }.sumOf { it.first }
+
+                Direction.South -> {
+                    input.foldRightIndexed(
+                        Pair(
+                            dotsCount,
+                            mutableSetOf()
+                        )
+                    ) { r, row, (count, rocks) ->
+                        val newCount = count.mapIndexed { c, n ->
+                            when (row[c]) {
+                                '.' -> n + 1
+                                '#' -> 0
+                                'O' -> rocks.add(Pair(r + n, c)).let { n }
+                                else -> throw RuntimeException("Unknown character: ${row[c]}")
+                            }
+                        }.toIntArray()
+                        Pair(newCount, rocks)
+                    }
+                }
+
+                else -> throw RuntimeException("Direction $direction is not vertical.")
+            }
+        return rocks
     }
 
-    fun part1(input: List<String>): Int = tiltNorthAndCountLoad(input)
-
-    fun cycle(input: List<String>): List<String> {
-        // N
-        var rocks = arrayOf<Pair<Int, Int>>()
-        val northed = input.also(::println).mapIndexed { r, row ->
-            var dotsCount = 0
-            row.mapIndexed { c, char ->
-                when (char) {
-                    '.' -> {
-                        dotsCount++
-                        '.'
-                    }
-
-                    '#' -> {
-                        dotsCount = 0
-                        '#'
-                    }
-
-                    'O' -> {
-                        rocks += Pair(r, c - dotsCount)
-                        '.'
-                    }
-
-                    else -> throw RuntimeException("Unknown character: $char")
+    fun tiltHorizontal(direction: Direction, input: List<String>): Set<Pair<Int, Int>> {
+        val rocks = when (direction) {
+            Direction.West -> {
+                input.mapIndexed { r, row ->
+                    row.foldIndexed(Pair(0, mutableSetOf<Pair<Int, Int>>())) { c, (n, rocks), char ->
+                        val newCount = when (char) {
+                            '.' -> n + 1
+                            '#' -> 0
+                            'O' -> rocks.add(Pair(r, c - n)).let { n }
+                            else -> throw RuntimeException("Unknown character: $char")
+                        }
+                        Pair(newCount, rocks)
+                    }.second
                 }
-            }.toTypedArray()
-        }.toTypedArray()
+            }
 
-        for ((row, col) in rocks) {
-            northed[row][col] = 'O'
+            Direction.East -> {
+                input.mapIndexed { r, row ->
+                    row.foldRightIndexed(Pair(0, mutableSetOf<Pair<Int, Int>>())) { c, char, (n, rocks) ->
+                        val newCount = when (char) {
+                            '.' -> n + 1
+                            '#' -> 0
+                            'O' -> rocks.add(Pair(r, c + n)).let { n }
+                            else -> throw RuntimeException("Unknown character: $char")
+                        }
+                        Pair(newCount, rocks)
+                    }.second
+                }
+            }
+
+            else -> throw RuntimeException("Direction $direction is not horizontal.")
+        }.flatten().toSet()
+        return rocks
+    }
+
+    fun tilt(direction: Direction, input: List<String>): List<String> {
+        val rocks = when {
+            direction.isVertical() -> tiltVertical(direction, input)
+            direction.isHorizontal() -> tiltHorizontal(direction, input)
+            else -> throw IllegalArgumentException("Direction makes no sense: $direction")
         }
-
-        val flo = northed.map { it.joinToString("") }.toList().also(::println)
-
-        // W
-        // S
-        // E
-        return input
+        val newMap = input.map { it.replace('O', '.').toCharArray() }
+        rocks.forEach { (r, c) -> newMap[r][c] = 'O' }
+        return newMap.map { r -> r.joinToString("") }
     }
+
+    fun cycle(input: List<String>) =
+        arrayOf(Direction.North, Direction.West, Direction.South, Direction.East)
+            .fold(input) { acc, direction -> tilt(direction, acc) }
 
     fun countLoadAfterCycles(input: List<String>, n: Int): Int {
         val states = hashMapOf(input to Pair(0, countLoad(input)))
         var cycles = 1
-        while (cycles < n) {
-            val newState = cycle(input)
-            if (states.containsKey(newState)) break
-            states[newState] = Pair(cycles, countLoad(newState))
-            cycles++
+        var state = input
+        while (cycles++ <= n) {
+            state = cycle(state)
+            states[state] = Pair(cycles, countLoad(state))
         }
-        val result = n % cycles
-        return states.values.find { it.first == result }?.second
-            ?: throw RuntimeException("No value found for state at cycle $result")
+        return countLoad(state)
     }
 
-    fun part2(input: List<String>): Int = countLoadAfterCycles(input, 1_000_000_000).also(::println)
+    fun part1(input: List<String>): Int = countLoad(tilt(Direction.North, input))
+
+    fun part2(input: List<String>): Int = countLoadAfterCycles(input, 1_000)
 
     // test if implementation meets criteria from the description, like:
     val testInput = readInput("Day14_test")
@@ -89,6 +129,6 @@ fun main() { // --- Day 14: Parabolic Reflector Dish ---
     check(part2(testInput) == 64)
 
     val input = readInput("Day14")
-    part1(input).println() // 106186
-//    part2(input).println()
+    part1(input).println()
+    part2(input).println()
 }
