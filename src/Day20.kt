@@ -14,7 +14,6 @@ fun main() { // --- Day 20: Pulse Propagation ---
             }
         }
 
-        // create button
         val missingModules = network.map { it.instantiateOutputs(network) }.flatten().toMutableSet()
         val button = Module("button", arrayListOf("broadcaster"))
         button.instantiateOutputs(network)
@@ -45,36 +44,29 @@ fun main() { // --- Day 20: Pulse Propagation ---
         }
         return network.map { m -> m.counts() }
             .unzip()
-//            .also { c ->
-//                println("Result: ${c.first.sum()} * ${c.second.sum()} = ${c.first.sum() * c.second.sum()}")
-//                println("Which amounts to ${c.first.sum() * (1000 / cycle)} * ${c.second.sum() * (1000 / cycle)} = ${c.first.sum() * (1000 / cycle) * c.second.sum() * (1000 / cycle)}") }
             .let { (lows, highs) -> lows.sum() * (1000 / cycle) * highs.sum() * (1000 / cycle) }
     }
 
     fun part2(input: List<String>): Long {
-        // find cycle: no. of buttonpresses when all modules in original state
         val (network, button) = createNetwork(input)
 
         val rx = network.find { it.name == "rx" } ?: throw RuntimeException("No module 'rx' found!")
-        val preRx = network.filter { it.outputs.contains(rx) }
-        val prePreRx = network.filter { preRx.any { p -> it.outputs.contains(p) } }
-
-        val monitored = prePreRx.associate { it.name to 0L }.toMutableMap()
+        val conjunctionBeforeRx = network.first { it.outputs.contains(rx) }
+        val monitored = network
+            .filter { it.outputs.contains(conjunctionBeforeRx) }
+            .associate { it.name to 0L }
+            .toMutableMap()
 
         var cycle = 0L
         while (monitored.values.any { it == 0L }) {
             cycle++
             var batch = arrayListOf(Triple(Module("deus ex", arrayListOf()), button, Pulse.Low))
             do {
-                batch = ArrayList(batch.map { m ->
-                    m.second.msg(m.first.also { n ->
-                        if (n.name in monitored && m.third == Pulse.High && monitored[n.name] == 0L) monitored[n.name] =
-                            cycle
-                    }, m.third)
-                }.flatten())
+                batch.filter { (from, _, pulse) -> pulse == Pulse.High && from.name in monitored && monitored[from.name] == 0L }
+                    .forEach { (from, _, _) -> monitored[from.name] = cycle }
+                batch = ArrayList(batch.map { (from, to, pulse) -> to.msg(from, pulse) }.flatten())
             } while (batch.isNotEmpty())
         }
-        println("Done! After $cycle cycles.")
         return monitored.also { it.println() }.values.reduce { a, b -> leastCommonMultiple(a, b) }
     }
 
