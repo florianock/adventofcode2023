@@ -14,7 +14,8 @@ fun main() { // --- Day 20: Pulse Propagation ---
             }
         }
 
-        val missingModules = network.map { it.instantiateOutputs(network) }.flatten().toMutableSet()
+        val missingModules = network.map { it.instantiateOutputs(network) }.flatten()
+
         val button = Module("button", arrayListOf("broadcaster"))
         button.instantiateOutputs(network)
         network.addFirst(button)
@@ -31,14 +32,14 @@ fun main() { // --- Day 20: Pulse Propagation ---
     fun part1(input: List<String>): Int {
         val (network, button) = createNetwork(input)
         var cycle = 0
+        val finger = Module("deus ex", arrayListOf())
         while (cycle < 1000) {
-            var batch = arrayListOf(Triple(Module("deus ex", arrayListOf()), button, Pulse.Low))
+            var batch = arrayListOf(Triple(finger, button, Pulse.Low))
             do {
-                batch = ArrayList(batch.map { m -> m.second.msg(m.first, m.third) }.flatten())
+                batch = ArrayList(batch.map { it.second.msg(it.first, it.third) }.flatten())
             } while (batch.isNotEmpty())
             cycle++
             if (network.all { m -> m.inOriginalState() }) {
-                println("After $cycle cycles: network in original state!")
                 break
             }
         }
@@ -58,16 +59,18 @@ fun main() { // --- Day 20: Pulse Propagation ---
             .toMutableMap()
 
         var cycle = 0L
+        val finger = Module("deus ex", arrayListOf())
         while (monitored.values.any { it == 0L }) {
             cycle++
-            var batch = arrayListOf(Triple(Module("deus ex", arrayListOf()), button, Pulse.Low))
+            var batch = arrayListOf(Triple(finger, button, Pulse.Low))
             do {
                 batch.filter { (from, _, pulse) -> pulse == Pulse.High && from.name in monitored && monitored[from.name] == 0L }
                     .forEach { (from, _, _) -> monitored[from.name] = cycle }
                 batch = ArrayList(batch.map { (from, to, pulse) -> to.msg(from, pulse) }.flatten())
             } while (batch.isNotEmpty())
         }
-        return monitored.also { it.println() }.values.reduce { a, b -> leastCommonMultiple(a, b) }
+
+        return monitored.values.toList().leastCommonMultiple()
     }
 
     // test if implementation meets criteria from the description, like:
@@ -91,9 +94,8 @@ open class Module(val name: String, val outputNames: ArrayList<String>) {
     fun instantiateOutputs(network: ArrayList<Module>): ArrayList<Module> {
         val missingModules = mutableSetOf<Module>()
         outputNames.mapTo(outputs) {
-            network.find { m -> m.name == it } ?: Module(it, arrayListOf()).also { n ->
-                missingModules.add(n).also { println("Added output module: ${n.name}") }
-            }
+            network.find { m -> m.name == it }
+                ?: Module(it, arrayListOf()).also { n -> missingModules.add(n) }
         }
         return ArrayList(missingModules)
     }
