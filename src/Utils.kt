@@ -31,12 +31,19 @@ fun Any?.println() = println(this)
 /**
  * Helper function for getting neighbors of a point in a 2-D matrix
  */
-fun neighbors(p: Pair<Int, Int>): Set<Pair<Int, Int>> {
-    return setOf(
-        Pair(p.first - 1, p.second - 1), Pair(p.first - 1, p.second), Pair(p.first - 1, p.second + 1),
-        Pair(p.first, p.second - 1), Pair(p.first, p.second + 1),
-        Pair(p.first + 1, p.second - 1), Pair(p.first + 1, p.second), Pair(p.first + 1, p.second + 1)
-    )
+fun neighbors(p: Pair<Int, Int>, includeDiagonal: Boolean = true): Set<Pair<Int, Int>> {
+    return if (includeDiagonal)
+        setOf(
+            Pair(p.first - 1, p.second - 1), Pair(p.first - 1, p.second), Pair(p.first - 1, p.second + 1),
+            Pair(p.first, p.second - 1), Pair(p.first, p.second + 1),
+            Pair(p.first + 1, p.second - 1), Pair(p.first + 1, p.second), Pair(p.first + 1, p.second + 1)
+        )
+    else
+        setOf(
+            Pair(p.first - 1, p.second),
+            Pair(p.first, p.second - 1), Pair(p.first, p.second + 1),
+            Pair(p.first + 1, p.second)
+        )
 }
 
 /**
