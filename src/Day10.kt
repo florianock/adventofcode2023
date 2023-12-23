@@ -3,6 +3,17 @@ enum class Direction { North, East, South, West }
 fun main() { // --- Day 10: Pipe Maze ---
     val visuals = true
 
+//    Voor de visuals:
+//    mapOf(
+//        Pair('|', '│'),
+//        Pair('-', '─'),
+//        Pair('L', '└'),
+//        Pair('J', '┘'),
+//        Pair('7', '┐'),
+//        Pair('F', '┌'),
+//        Pair('.', '░')
+//    )
+
     // verticaal: 7F; 7|; |F; J|; |L; JF; JL; 7L
     // horizontaal: J; L; J; L; -; L; J; -
     //              -; -; 7; 7; 7; F; F; F
