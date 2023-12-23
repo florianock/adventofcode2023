@@ -14,7 +14,7 @@ fun main() { // --- Day 20: Pulse Propagation ---
             }
         }
 
-        val missingModules = network.map { it.instantiateOutputs(network) }.flatten()
+        val missingModules = network.flatMap { it.instantiateOutputs(network) }
 
         val button = Module("button", arrayListOf("broadcaster"))
         button.instantiateOutputs(network)
@@ -32,7 +32,7 @@ fun main() { // --- Day 20: Pulse Propagation ---
     fun part1(input: List<String>): Int {
         val (network, button) = createNetwork(input)
         var cycle = 0
-        val finger = Module("deus ex", arrayListOf())
+        val finger = Module("ex machina", arrayListOf())
         while (cycle < 1000) {
             var batch = arrayListOf(Triple(finger, button, Pulse.Low))
             do {
@@ -59,7 +59,7 @@ fun main() { // --- Day 20: Pulse Propagation ---
             .toMutableMap()
 
         var cycle = 0L
-        val finger = Module("deus ex", arrayListOf())
+        val finger = Module("ex machina", arrayListOf())
         while (monitored.values.any { it == 0L }) {
             cycle++
             var batch = arrayListOf(Triple(finger, button, Pulse.Low))
