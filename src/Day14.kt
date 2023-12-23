@@ -109,19 +109,29 @@ fun main() { // --- Day 14: Parabolic Reflector Dish ---
             .fold(input) { acc, direction -> tilt(direction, acc) }
 
     fun countLoadAfterCycles(input: List<String>, n: Int): Int {
-        val states = hashMapOf(input to Pair(0, countLoad(input)))
-        var cycles = 1
+        val states = hashMapOf(input to 0)
+        var cycle = 0
         var state = input
-        while (cycles++ <= n) {
+
+        while (cycle++ < n) {
             state = cycle(state)
-            states[state] = Pair(cycles, countLoad(state))
+            if (states.containsKey(state)) break
+            states[state] = cycle
         }
+
+        val cycleStart = states.getValue(state)
+        val cycleLength = cycle - cycleStart
+        val remainingCycles = (n - cycle) % cycleLength
+        repeat(remainingCycles) {
+            state = cycle(state)
+        }
+
         return countLoad(state)
     }
 
     fun part1(input: List<String>): Int = countLoad(tilt(Direction.North, input))
 
-    fun part2(input: List<String>): Int = countLoadAfterCycles(input, 1_000)
+    fun part2(input: List<String>): Int = countLoadAfterCycles(input, 1_000_000_000)
 
     // test if implementation meets criteria from the description, like:
     val testInput = readInput("Day14_test")
